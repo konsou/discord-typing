@@ -14,25 +14,23 @@ def load_settings(settings_filename: str) -> dict:
 
 def main():
     settings = load_settings('settings.json')
-    print(settings)
+    user_ids_to_watch = settings['user-ids-to-watch']
     token = getenv('TOKEN')
-    print(token)
     bot = discum.Client(token=token)
 
     @bot.gateway.command
     def hello_world(response):
+
+        if response.event.typing:
+            parsed = response.parsed.auto()
+            user_id = parsed['user_id']
+            channel_id = parsed['channel_id']
+            if user_id in user_ids_to_watch:
+                bot.typingAction(channel_id)
+
         if response.event.ready_supplemental:
             user = bot.gateway.session.user
             print(f'Logged in as {user["username"]}#{user["discriminator"]}')
-
-        if response.event.message:
-            m = response.parsed.auto()
-            guild_id = m['guild_id'] if 'guild_id' in m else None
-            channel_id = m['channel_id']
-            username = m['author']['username']
-            discriminator = m['author']['discriminator']
-            content = m['content']
-            print(f'> guild {guild_id} channel {channel_id} | {username}#{discriminator}: {content}')
 
     bot.gateway.run(auto_reconnect=True)
 
