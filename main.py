@@ -19,7 +19,7 @@ def main():
     bot = discum.Client(token=token)
 
     @bot.gateway.command
-    def hello_world(response):
+    def handle_response(response):
 
         if response.event.typing:
             parsed = response.parsed.auto()
